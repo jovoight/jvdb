@@ -6,6 +6,13 @@
 // #include "file.h"
 // #include "parse.h"
 
+void print_usage(char *argv[]) {
+	printf("Usage: %s -n -f <file_path>\n", argv[0]);
+	printf("\t-n\tCreate new database file\n");
+	printf("\t-f\t(REQUIRED) Path to database file\n");
+	return;
+}
+
 int main(int argc, char *argv[]) {
 
 	int c;
@@ -25,6 +32,12 @@ int main(int argc, char *argv[]) {
 			default:
 				return -1;
 		}
+	}
+
+	if (filepath == NULL) {
+		printf("File path is a required argument.\n");
+		print_usage(argv);
+		return 0;
 	}
 
 	printf("New File: %d\n", newfile);
