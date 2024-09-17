@@ -1,9 +1,10 @@
-TARGET = bin/final
+TARGET = bin/jvdb
 SRC = $(wildcard src/*.c)
 OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
 
 run: clean default
-	./$(TARGET)
+	./$(TARGET) -f ./mynewdb.db -n
+	./$(TARGET) -f ./mynewdb.db -n
 
 default: $(TARGET)
 
