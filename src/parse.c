@@ -12,7 +12,7 @@
 int create_db_header(int fd, struct db_header_t **header_out) {
 	// Create a new header in the heap, error out if allocation fails
 	struct db_header_t *header = calloc(1, sizeof(struct db_header_t));
-	if (header == NULL) {
+	if (header == (void *)-1) {
 		printf("Calloc failed to create DB header.\n");
 		return STATUS_ERROR;
 	}
@@ -35,7 +35,7 @@ int validate_db_header(int fd, struct db_header_t **header_out) {
 	}
 	// Create an empty header on the heap, error out if allocation fails
 	struct db_header_t *header = calloc(1, sizeof(struct db_header_t));
-	if (header == NULL) {
+	if (header == (void *)-1) {
 		printf("Calloc failed to create DB header.\n");
 		return STATUS_ERROR;
 	}
@@ -74,23 +74,72 @@ int validate_db_header(int fd, struct db_header_t **header_out) {
 	return STATUS_SUCCESS;
 }
 
-int output_file(int fd, struct db_header_t *header) {
+int output_file(int fd, struct db_header_t *header, struct employee_t *employees) {
 	// Error out if bad FD passed to the function
 	if (fd < 0) {
 		printf("Bad FD from client.\n");
 		return STATUS_ERROR;
 	}
+	// Store the employee count before packing the header
+	int count = header -> count;
 	// Ensure network endianness of all data in the header
 	header -> version = htons(header -> version);
-	header -> count = htons(header -> version);
+	header -> count = htons(header -> count);
 	header -> magic = htonl(header -> magic);
-	header -> file_size = htonl(header -> file_size);
+	header -> file_size = htonl(sizeof(struct db_header_t) + count * sizeof(struct employee_t));
 	// Return the cursor to the start of the file
 	lseek(fd, 0, SEEK_SET);
-	// Write the updated data to the file
+	// Write the updated header to the file
 	write(fd, header, sizeof(struct db_header_t));
+	// Iterate through the employees
+	for (int i = 0; i < count; i++) {
+		// Ensure the employee's network endianness
+		employees[i].hours = htonl(employees[i].hours);
+		// Write the employee to the disk
+		write(fd, &employees[i], sizeof(struct employee_t));
+	}
 	// Free allocated memory
 	free(header);
+	free(employees);
+	// Return success
+	return STATUS_SUCCESS;
+}
+
+int read_employees(int fd, struct db_header_t *header, struct employee_t **employees_out) {
+	// Error out if bad FD passed to the function
+	if (fd < 0) {
+		printf("Bad FD from client.\n");
+		return STATUS_ERROR;
+	}
+	// Get the number of employees from the DB header
+	int count = header -> count;
+	// Create a buffer to store the employees, error out if allocation fails
+	struct employee_t *employees = calloc(count, sizeof(struct employee_t));
+	if (employees == (void *)-1) {
+		printf("Calloc failed to create employee buffer.\n");
+		return STATUS_ERROR;
+	}
+	// Read the employees from the disk into the buffer in memory
+	read(fd, employees, count * sizeof(struct employee_t));
+	// Iterate through the employees and convert to host endianness
+	for (int i = 0; i < count; i++) {
+		employees[i].hours = ntohl(employees[i].hours);
+	}
+	// Pass the populated employees to employees_out
+	*employees_out = employees;
+	// Return success
+	return STATUS_SUCCESS;
+}
+
+int add_employee(struct db_header_t *header, struct employee_t *employees, char *add_str) {
+	// parse the string into its individual parts
+	char *name = strtok(add_str, ",");
+	char *address = strtok(NULL, ",");
+	char *hours = strtok(NULL, ",");
+	// 
+	strncpy(employees[header -> count - 1].name, name, sizeof(employees[header -> count - 1].name));
+	strncpy(employees[header -> count - 1].address, address, sizeof(employees[header -> count - 1].address));
+	employees[header -> count - 1].hours = atoi(hours);
 	// Return success
 	return STATUS_SUCCESS;
 }

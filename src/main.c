@@ -21,14 +21,19 @@ int main(int argc, char *argv[]) {
 	char *file_path = NULL;
 	int db_fd = STATUS_ERROR;
 	struct db_header_t *header = NULL;
+	struct employee_t *employees = NULL;
+	char *add_str = NULL;
 	// Handle all applicable flags
-	while ((command = getopt(argc, argv, "nf:")) != -1) {
+	while ((command = getopt(argc, argv, "nf:a:")) != -1) {
 		switch (command) {
 			case 'n':
 				new_file = true;
 				break;
 			case 'f':
 				file_path = optarg;
+				break;
+			case 'a':
+				add_str = optarg;
 				break;
 			case '?':
 				printf("Unknown option -%c\n", command);
@@ -67,10 +72,21 @@ int main(int argc, char *argv[]) {
 			return STATUS_ERROR;
 		}
 	}
+	// Read the employees from the disk into memory
+	if (read_employees(db_fd, header, &employees) == STATUS_ERROR) {
+		printf("Failed to read employees.\n");
+		return STATUS_ERROR;
+	}
+	// Handle adding an employee (if selected)
+	if (add_str) {
+		header -> count++;
+		employees = realloc(employees, header -> count * sizeof(struct employee_t));
+		add_employee(header, employees, add_str);
+	}
 	// Print output
 	printf("New File: %d\n", new_file);
 	printf("File Path: %s\n", file_path);
 	//Write the updated data back to the disk
-	output_file(db_fd, header);
+	output_file(db_fd, header, employees);
 	return STATUS_SUCCESS;
 }
