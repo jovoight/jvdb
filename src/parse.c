@@ -143,3 +143,19 @@ int add_employee(struct db_header_t *header, struct employee_t *employees, char 
 	// Return success
 	return STATUS_SUCCESS;
 }
+
+void list_employees(struct db_header_t *header, struct employee_t *employees) {
+	// Iterate through the employees
+	for (int i = 0; i < header -> count; i++) {
+		printf("Employee %d:\n", i + 1);
+		printf("\tName: %s\n", employees[i].name);
+		printf("\tAddress: %s\n", employees[i].address);
+		printf("\tHours: %d\n", employees[i].hours);
+	}
+	return;
+}
+
+int delete_employee_by_name(struct db_header_t *header, struct employee_t *employees, char *name) {
+
+	return STATUS_SUCCESS;
+}

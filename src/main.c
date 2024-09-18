@@ -23,8 +23,9 @@ int main(int argc, char *argv[]) {
 	struct db_header_t *header = NULL;
 	struct employee_t *employees = NULL;
 	char *add_str = NULL;
+	bool list = false;
 	// Handle all applicable flags
-	while ((command = getopt(argc, argv, "nf:a:")) != -1) {
+	while ((command = getopt(argc, argv, "nf:a:l")) != -1) {
 		switch (command) {
 			case 'n':
 				new_file = true;
@@ -34,6 +35,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'a':
 				add_str = optarg;
+				break;
+			case 'l':
+				list = true;
 				break;
 			case '?':
 				printf("Unknown option -%c\n", command);
@@ -83,10 +87,20 @@ int main(int argc, char *argv[]) {
 		employees = realloc(employees, header -> count * sizeof(struct employee_t));
 		add_employee(header, employees, add_str);
 	}
+	// Handle deleting an employee by name (if selected)
+	if (delete_name) {
+		if (delete_employee_by_name(header, employees, delete_name) == STATUS_ERROR) {
+			printf("Failed to delete employee %s\n", delete_name);
+			return STATUS_ERROR;
+		}
+	}
+	// Handle listing employees (if selected)
+	if (list) { list_employees(header, employees); }
 	// Print output
 	printf("New File: %d\n", new_file);
 	printf("File Path: %s\n", file_path);
 	//Write the updated data back to the disk
 	output_file(db_fd, header, employees);
+	// Return success
 	return STATUS_SUCCESS;
 }
