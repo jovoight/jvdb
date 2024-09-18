@@ -24,8 +24,9 @@ int main(int argc, char *argv[]) {
 	struct employee_t *employees = NULL;
 	char *add_str = NULL;
 	bool list = false;
+	char *delete_name = NULL;
 	// Handle all applicable flags
-	while ((command = getopt(argc, argv, "nf:a:l")) != -1) {
+	while ((command = getopt(argc, argv, "nf:a:lr:")) != -1) {
 		switch (command) {
 			case 'n':
 				new_file = true;
@@ -38,6 +39,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'l':
 				list = true;
+				break;
+			case 'r':
+				delete_name = optarg;
 				break;
 			case '?':
 				printf("Unknown option -%c\n", command);
@@ -93,6 +97,7 @@ int main(int argc, char *argv[]) {
 			printf("Failed to delete employee %s\n", delete_name);
 			return STATUS_ERROR;
 		}
+		header -> count--;
 	}
 	// Handle listing employees (if selected)
 	if (list) { list_employees(header, employees); }

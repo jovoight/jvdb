@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -82,11 +83,18 @@ int output_file(int fd, struct db_header_t *header, struct employee_t *employees
 	}
 	// Store the employee count before packing the header
 	int count = header -> count;
+	// Calculate file_size ahead of time to use for truncation
+	header -> file_size = sizeof(struct db_header_t) + count * sizeof(struct employee_t);
+	// Truncate the file to the file_size stored in the header
+	if (ftruncate(fd, header -> file_size) == STATUS_ERROR) {
+		printf("Failed to truncate DB file.\n");
+		return STATUS_ERROR;
+	}
 	// Ensure network endianness of all data in the header
 	header -> version = htons(header -> version);
 	header -> count = htons(header -> count);
 	header -> magic = htonl(header -> magic);
-	header -> file_size = htonl(sizeof(struct db_header_t) + count * sizeof(struct employee_t));
+	header -> file_size = htonl(header -> file_size);
 	// Return the cursor to the start of the file
 	lseek(fd, 0, SEEK_SET);
 	// Write the updated header to the file
@@ -156,6 +164,26 @@ void list_employees(struct db_header_t *header, struct employee_t *employees) {
 }
 
 int delete_employee_by_name(struct db_header_t *header, struct employee_t *employees, char *name) {
-
+	// Create a boolean to see if the employee was deleted
+	bool deleted = false;
+	// Iterate through the employees
+	for (int i = 0; i < header -> count; i++) {
+		// Check if the current employee should be deleted
+		if (strcmp(employees[i].name, name) == 0) {
+			// If so, shift all remaining employees back
+			for (int j = i; j < header -> count; j++) {
+				employees[j] = employees[j + 1];
+			}
+			// Update the deleted bool
+			deleted = true;
+			// Break from the loop
+			break;
+		}
+	}
+	// Check if the element to delete was found
+	if (!deleted) {
+		printf("Employee %s not found.\n", name);
+		return STATUS_ERROR;
+	}
 	return STATUS_SUCCESS;
 }
