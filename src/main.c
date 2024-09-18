@@ -9,9 +9,14 @@
 #include "../include/parse.h"
 // Show how to use the utility if commands are passed incorrectly
 void print_usage(char *argv[]) {
-	printf("Usage: %s -n -f <file_path>\n", argv[0]);
+	printf("Usage: %s -n -f <file_path> -a <name,address,hours> -l -r <name> -u <name,hours> -h\n", argv[0]);
 	printf("\t-n\tCreate new database file\n");
 	printf("\t-f\t(REQUIRED) Path to database file\n");
+	printf("\t-a\tAdd a new employee to the database\n");
+	printf("\t-l\tList all employees currently stored in the database\n");
+	printf("\t-r\tRemove an employee from the database by name\n");
+	printf("\t-u\tUpdate an employee's hours by name\n");
+	printf("\t-h\tHelp\n");
 	return;
 }
 
@@ -28,7 +33,7 @@ int main(int argc, char *argv[]) {
 	char *delete_name = NULL;
 	char *name_and_hours = NULL;
 	// Handle all applicable flags
-	while ((command = getopt(argc, argv, "nf:a:lr:u:")) != -1) {
+	while ((command = getopt(argc, argv, "nf:a:lr:u:h")) != -1) {
 		switch (command) {
 			case 'n':
 				new_file = true;
@@ -48,9 +53,13 @@ int main(int argc, char *argv[]) {
 			case 'u':
 				name_and_hours = optarg;
 				break;
+			case 'h':
+				print_usage(argv);
+				break;
 			case '?':
 				printf("Unknown option -%c\n", command);
-				break;
+				print_usage(argv);
+				return STATUS_ERROR;
 			default:
 				return STATUS_ERROR;
 		}
