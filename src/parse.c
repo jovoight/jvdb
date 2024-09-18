@@ -187,3 +187,27 @@ int delete_employee_by_name(struct db_header_t *header, struct employee_t *emplo
 	}
 	return STATUS_SUCCESS;
 }
+
+int update_employee_hours_by_name(struct db_header_t *header, struct employee_t *employees, char *name_and_hours) {
+	// Split the input string into name and hours
+	char *name = strtok(name_and_hours, ",");
+	char *hours = strtok(NULL, ",");
+	// Initialize a boolean representing whether the employee was successfully updated
+	bool updated = false;
+	// Iterate through the employees
+	for (int i = 0; i < header -> count; i++) {
+		// Check if the current employee should be updated
+		if (strcmp(employees[i].name, name) == 0) {
+			// If so, update the hours and updated boolean and break from the loop
+			sscanf(hours, "%d", &employees[i].hours);
+			updated = true;
+			break;
+		}
+	}
+	// Check if the employee to update was found
+	if (!updated) {
+		printf("Employee %s not found.\n", name);
+		return STATUS_ERROR;
+	}
+	return STATUS_SUCCESS;
+}

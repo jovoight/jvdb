@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../include/common.h"
 #include "../include/file.h"
@@ -25,8 +26,9 @@ int main(int argc, char *argv[]) {
 	char *add_str = NULL;
 	bool list = false;
 	char *delete_name = NULL;
+	char *name_and_hours = NULL;
 	// Handle all applicable flags
-	while ((command = getopt(argc, argv, "nf:a:lr:")) != -1) {
+	while ((command = getopt(argc, argv, "nf:a:lr:u:")) != -1) {
 		switch (command) {
 			case 'n':
 				new_file = true;
@@ -42,6 +44,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'r':
 				delete_name = optarg;
+				break;
+			case 'u':
+				name_and_hours = optarg;
 				break;
 			case '?':
 				printf("Unknown option -%c\n", command);
@@ -98,6 +103,12 @@ int main(int argc, char *argv[]) {
 			return STATUS_ERROR;
 		}
 		header -> count--;
+	}
+	// Handle updating employee hours by name (if selected)
+	if (name_and_hours) {
+		if (update_employee_hours_by_name(header, employees, name_and_hours) == STATUS_ERROR) {
+			printf("Failed to update employee %s\n", strtok(name_and_hours, ","));
+		}
 	}
 	// Handle listing employees (if selected)
 	if (list) { list_employees(header, employees); }
