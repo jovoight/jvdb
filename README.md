@@ -5,10 +5,10 @@ For the purposes of this project, the database will be a simple .db file (simila
 ## Basic Functionality
 By running the binary "./jvdb", the contents of the DB file (employee structs) will be read into memory. Data will be validated to ensure the file is secure, it is actually the correct information, and nothing is missing. At this point, the program will check for additional flags to see which feature(s) is/are currently being requested.
 ## Features (CLI Flags)
-Specify DB file (-f "\<file_name\>)
-Create new DB file if does not exist (-n)
-Add a new employee (-a \<name,address,hours\>)
-List all current employees (-l)
-Remove an employee by name (-r \<name\>)
-Update an employee's hours by name (-u \<name,hours\>)
-Help (list all flags and usage) (-h)
+* Specify DB file (-f "\<file_name\>)
+* Create new DB file if does not exist (-n)
+* Add a new employee (-a \<name,address,hours\>)
+* List all current employees (-l)
+* Remove an employee by name (-r \<name\>)
+* Update an employee's hours by name (-u \<name,hours\>)
+* Help (list all flags and usage) (-h)
